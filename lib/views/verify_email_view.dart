@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as devtools show log;
 
 class VerifyEmailView extends StatefulWidget {
   const VerifyEmailView({super.key});
@@ -16,30 +17,51 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
         title: const Text("Verify Email"),
         backgroundColor: Colors.blue,
       ),
-      body: Column(
-        children: [
-          Text("Your Email is not verified"),
-          TextButton(
-            onPressed: () async {
-              final user = FirebaseAuth.instance.currentUser;
-              print(user);
-              try {
-                await user?.sendEmailVerification();
-              } catch (e) {
-                print(e);
-              }
+      body: Center(
+        child: Column(
+          children: [
+            Text("Your Email is not verified"),
+            TextButton(
+              onPressed: () async {
+                final user = FirebaseAuth.instance.currentUser;
+                if (!context.mounted) return;
+                try {
+                  await user?.sendEmailVerification();
+                } catch (e) {
+                  devtools.log(e.toString());
+                }
 
-              print("Email sent");
-            },
-            child: Text("Send Email"),
-          ),
-          TextButton(
-            onPressed: () async {
-              await FirebaseAuth.instance.currentUser?.reload();
-            },
-            child: Text("Verify Email"),
-          ),
-        ],
+                devtools.log("Verification email sent");
+              },
+              child: Text("Send Email"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.currentUser?.reload();
+                final user = FirebaseAuth.instance.currentUser;
+                if (user?.emailVerified ?? false) {
+                  if (!context.mounted) return;
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil("/notes/", (route) => false);
+                } else {
+                  devtools.log("Email not verified");
+                }
+              },
+              child: Text("Verify Email"),
+            ),
+            TextButton(
+              onPressed: () async {
+                await FirebaseAuth.instance.signOut();
+                if (!context.mounted) return;
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil("/login/", (route) => false);
+              },
+              child: Text("Edit Email and Password"),
+            ),
+          ],
+        ),
       ),
     );
   }

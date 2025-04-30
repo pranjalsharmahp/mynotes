@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'dart:developer' as devtools show log;
 import 'package:flutter/material.dart';
+import 'package:mynotes/constants/routes.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -56,17 +57,24 @@ class _LoginViewState extends State<LoginView> {
                       email: email,
                       password: password,
                     );
-                print(userCredentials);
                 await FirebaseAuth.instance.currentUser?.reload();
-                Navigator.of(
-                  context,
-                ).pushNamedAndRemoveUntil("/notes/", (route) => false);
+                if (userCredentials.user?.emailVerified ?? false) {
+                  if (!context.mounted) return;
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil(notesRoute, (route) => false);
+                } else {
+                  if (!context.mounted) return;
+                  Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil(verifyEmailRoute, (route) => false);
+                }
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'invalid-credential') {
-                  print("Invalid credentials");
+                  devtools.log("Invalid credentials");
                 } else {
-                  print(e.code);
-                  print("Something else happened");
+                  devtools.log(e.code);
+                  devtools.log("Something else happened");
                 }
               }
             },
@@ -76,7 +84,7 @@ class _LoginViewState extends State<LoginView> {
             onPressed: () {
               Navigator.of(
                 context,
-              ).pushNamedAndRemoveUntil("/register/", (route) => false);
+              ).pushNamedAndRemoveUntil(registerRoute, (route) => false);
             },
             child: Text("Not registered Yet? Register here"),
           ),
