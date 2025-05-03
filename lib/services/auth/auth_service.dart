@@ -1,0 +1,44 @@
+import 'package:mynotes/services/auth/auth_user.dart';
+import 'package:mynotes/services/auth/auth_provider.dart';
+
+class AuthService implements AuthProvider {
+  final AuthProvider authProvider;
+  AuthService(this.authProvider);
+  @override
+  Future<void> initialize() async {
+    // Initialize the authentication provider
+  }
+
+  @override
+  AuthUser? get currentUser {
+    return authProvider.currentUser;
+  }
+
+  @override
+  Future<AuthUser?> logIn({
+    required String email,
+    required String password,
+  }) async {
+    return await authProvider.logIn(email: email, password: password);
+  }
+
+  @override
+  Future<AuthUser?> register({
+    required String email,
+    required String password,
+  }) async {
+    // Register a new user with email and password
+    return await authProvider.register(email: email, password: password);
+  }
+
+  @override
+  Future<void> sendEmailVerification() async {
+    await authProvider.sendEmailVerification();
+  }
+
+  @override
+  Future<void> logOut() async {
+    // Log out the current user
+    await authProvider.logOut();
+  }
+}
