@@ -1,12 +1,17 @@
 import 'package:mynotes/services/auth/auth_user.dart';
 import 'package:mynotes/services/auth/auth_provider.dart';
+import 'package:mynotes/services/auth/firebase_auth_provider.dart';
 
 class AuthService implements AuthProvider {
   final AuthProvider authProvider;
   AuthService(this.authProvider);
+
+  factory AuthService.firebase() {
+    return AuthService(FirebaseAuthProvider());
+  }
   @override
   Future<void> initialize() async {
-    // Initialize the authentication provider
+    await authProvider.initialize();
   }
 
   @override
@@ -40,5 +45,10 @@ class AuthService implements AuthProvider {
   Future<void> logOut() async {
     // Log out the current user
     await authProvider.logOut();
+  }
+
+  @override
+  Future<void> reloadUser() async {
+    authProvider.reloadUser();
   }
 }

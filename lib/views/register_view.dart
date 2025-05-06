@@ -1,7 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer' as devtools show log;
 import 'package:flutter/material.dart';
 import 'package:mynotes/constants/routes.dart';
+import 'package:mynotes/services/auth/auth_exceptions.dart';
+import 'package:mynotes/services/auth/auth_service.dart';
 import 'package:mynotes/utilities/show_error_dialog.dart';
 
 class RegisterView extends StatefulWidget {
@@ -56,39 +57,22 @@ class _RegisterViewState extends State<RegisterView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                await AuthService.firebase().register(
                   email: email,
                   password: password,
                 );
-                final user = FirebaseAuth.instance.currentUser;
-                await user?.sendEmailVerification();
+                AuthService.firebase().sendEmailVerification();
                 if (!context.mounted) return;
                 Navigator.of(context).pushNamed(verifyEmailRoute);
                 devtools.log("User Created");
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'invalid-email') {
-                  await showErrorDialog(context, "Invalid email");
-                } else if (e.code == "email-already-in-use") {
-                  await showErrorDialog(context, "Email already in use");
-                } else if (e.code == "weak-password") {
-                  await showErrorDialog(context, "Weak password");
-                } else if (e.code == "operation-not-allowed") {
-                  await showErrorDialog(context, "Operation not allowed");
-                } else if (e.code == "too-many-requests") {
-                  await showErrorDialog(
-                    context,
-                    "Too many requests. Try again later.",
-                  );
-                } else if (e.code == "network-request-failed") {
-                  await showErrorDialog(
-                    context,
-                    "Network request failed. Check your connection.",
-                  );
-                } else {
-                  await showErrorDialog(context, "Error: ${e.code}");
-                }
-              } catch (e) {
-                await showErrorDialog(context, e.toString());
+              } on InvalidEmailAuthException {
+                await showErrorDialog(context, "Invalid email");
+              } on EmailAlreadyInUseAuthException {
+                await showErrorDialog(context, "Email already in use");
+              } on WeakPasswordAuthException {
+                await showErrorDialog(context, "Weak password");
+              } on GenericAuthException {
+                await showErrorDialog(context, "Authentication error");
               }
             },
             child: const Text("Register"),

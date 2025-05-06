@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mynotes/firebase_options.dart';
 import 'package:mynotes/services/auth/auth_exceptions.dart';
 import 'package:mynotes/services/auth/auth_provider.dart';
 import 'package:mynotes/services/auth/auth_user.dart';
@@ -8,7 +9,6 @@ import 'package:firebase_auth/firebase_auth.dart'
 
 class FirebaseAuthProvider implements AuthProvider {
   @override
-  // TODO: implement currentUser
   AuthUser? get currentUser {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -19,9 +19,10 @@ class FirebaseAuthProvider implements AuthProvider {
   }
 
   @override
-  Future<void> initialize() {
-    // TODO: implement initialize
-    throw UnimplementedError();
+  Future<void> initialize() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   }
 
   @override
@@ -42,10 +43,12 @@ class FirebaseAuthProvider implements AuthProvider {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-credential') {
+        throw InvalidCredentialsAuthException();
       } else if (e.code == "invalid-email") {
-      } else {}
-    } catch (e) {
-      throw GenericAuthException();
+        throw InvalidEmailAuthException();
+      } else {
+        throw GenericAuthException();
+      }
     }
   }
 
@@ -77,14 +80,14 @@ class FirebaseAuthProvider implements AuthProvider {
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'invalid-email') {
+        throw InvalidEmailAuthException();
       } else if (e.code == "email-already-in-use") {
+        throw EmailAlreadyInUseAuthException();
       } else if (e.code == "weak-password") {
-      } else if (e.code == "operation-not-allowed") {
-      } else if (e.code == "too-many-requests") {
-      } else if (e.code == "network-request-failed") {
-      } else {}
-    } catch (e) {
-      throw GenericAuthException();
+        throw WeakPasswordAuthException();
+      } else {
+        throw GenericAuthException();
+      }
     }
   }
 
@@ -96,5 +99,10 @@ class FirebaseAuthProvider implements AuthProvider {
     } else {
       throw UserNotLoggedInAuthException();
     }
+  }
+
+  @override
+  Future<void> reloadUser() async {
+    await FirebaseAuth.instance.currentUser?.reload();
   }
 }
