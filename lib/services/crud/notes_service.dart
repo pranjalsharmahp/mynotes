@@ -52,10 +52,12 @@ class NotesService {
     final db = _getDatabaseOrThrow();
 
     await getNote(id: note.id);
-    final updatesCount = await db.update(notesTable, {
-      textColumn: text,
-      isSyncedWithCloudColumn: 0,
-    });
+    final updatesCount = await db.update(
+      notesTable,
+      {textColumn: text, isSyncedWithCloudColumn: 0},
+      where: 'id=?',
+      whereArgs: [note.id],
+    );
     if (updatesCount == 0) {
       throw CouldNotUpdateNote();
     } else {
@@ -88,9 +90,9 @@ class NotesService {
       throw CouldNotFindNote();
     }
     final note = DatabaseNote.fromRow(notes.first);
-    _notes.removeWhere((note) => note.id == id);
-    _notes.add(note);
-    _notesStreamController.add(_notes);
+    // _notes.removeWhere((note) => note.id == id);
+    // _notes.add(note);
+    // _notesStreamController.add(_notes);
     return note;
   }
 
