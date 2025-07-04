@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' show User;
 
 class AuthUser {
-  final String? email;
+  final String email;
   final String? id;
   final bool isEmailVerified;
 
@@ -13,7 +13,7 @@ class AuthUser {
 
   factory AuthUser.fromFirebase(User user) {
     return AuthUser(
-      email: user.email,
+      email: user.email!,
       id: user.uid,
       isEmailVerified: user.emailVerified,
     );
